@@ -1,70 +1,66 @@
-  
-                    var manifestUri = "https://ml-pull-hwc.myco.io/MixTV/hls/index.m3u8";
+async function initPlayer() {
+    // 1. تعريف العناصر الأساسية
+    const video = document.getElementById('video');
+    const ui = video['ui'];
+    const controls = ui.getControls();
+    const player = controls.getPlayer();
 
+    // 2. إعدادات الشكل والزراير (نفس اللي كانت في ملفك)
+    const uiConfig = {
+        'controlPanelElements': [
+            'play_pause', 'time_and_duration', 'spacer', 
+            'mute', 'volume', 'quality', 'fullscreen', 'overflow_menu'
+        ],
+        'overflowMenuButtons': ['language', 'playback_rate', 'statistics', 'cast'],
+        'addCustomButtons': true
+    };
+    ui.configure(uiConfig);
 
-                
+    // 3. إعدادات البث (عشان الـ User-Agent والـ CORS)
+    player.configure({
+        streaming: {
+            jumpLargeGaps: true,
+            lowLatencyMode: true,
+            rebufferingGoal: 10
+        }
+    });
 
-                    // Initialize Shaka Player UI if not already initialized
-                    if (!video['ui']) {
-                        console.log('Initializing Shaka UI');
-                        const player = new shaka.Player(video);
-                        const ui = new shaka.ui.Overlay(player, videoContainer, video);
-                        video['ui'] = ui;
-                    }
+    // إضافة فلتر الـ User-Agent اللي اتفقنا عليه
+    player.getNetworkingEngine().registerRequestFilter(function(type, request) {
+        request.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36';
+    });
 
-                    const ui = video['ui'];
-                    if (ui) {
-                        const config = {
-                            'seekBarColors': {
-                                base: 'rgba(255,255,255,.2)',
-                                buffered: 'rgba(255,255,255,.4)',
-                                played: 'rgb(255,0,0)',
-                            },
-                            //'enableTooltips': true,
-                        };
-                        ui.configure(config);
+    // 4. الذكاء الجديد: نختار هنشغل إيه؟
+    const urlParams = new URLSearchParams(window.location.search);
+    const directUrl = urlParams.get('s');  // لو فيه رابط مباشر
+    const channelId = urlParams.get('id'); // لو فيه ID
 
-                        const controls = ui.getControls();
-                        const player = controls.getPlayer();
-
-                        // Attach player and UI to the window for debugging
-                        window.player = player;
-                        window.ui = ui;
-
-                        // Handle errors
-                        player.addEventListener('error', (event) => {
-                            console.error('Player error:', event.detail);
-                        });
-                        controls.addEventListener('error', (event) => {
-                            console.error('UI error:', event.detail);
-                        });
-
-                        try {
-                            // Configure player options
-                            if (channel.type === 'mpd') {
-                                player.configure({
-                                    drm: {
-                                        clearKeys: {
-                                            [channel.keyId]: channel.key,
-                                        },
-                                    },
-                                });
-                            }
-
-                            await player.load(manifestUri);
-                            console.log('The video has now been loaded!');
-                        } catch (error) {
-                            console.error('Error loading video:', error);
-                        }
-                    } else {
-                        console.error('UI not found for the video element');
-                    }
-                } else {
-                    console.error('Channel not found');
-                }
-            })
-            .catch((error) => console.error('Error fetching channel details:', error));
-    } else {
-        console.error('Channel ID not provided');
+    try {
+        if (directUrl) {
+            // أ - لو بعت رابط مباشر: شغله علطول
+            console.log("تشغيل رابط مباشر...");
+            await player.load(decodeURIComponent(directUrl));
+        } 
+        else if (channelId) {
+            // ب - لو بعت ID: روح اسأل السيرفر زي زمان
+            console.log("جاري جلب بيانات القناة بالـ ID...");
+            const response = await fetch(`https://your-api-server.com/api?id=${channelId}`);
+            const data = await response.json();
+            
+            // لو القناة فيها تشفير (Keys)
+            if (data.keyId && data.key) {
+                player.configure({
+                    drm: { clearKeys: { [data.keyId]: data.key } }
+                });
+            }
+            await player.load(data.url);
+        } else {
+            console.error("لا يوجد رابط (s) ولا يوجد معرف (id)!");
+        }
+    } catch (e) {
+        console.error("خطأ في التحميل:", e);
     }
-});
+}
+
+// تشغيل عند جاهزية المكتبة
+document.addEventListener('shaka-ui-loaded', initPlayer);
