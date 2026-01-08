@@ -14,13 +14,10 @@ document.addEventListener("DOMContentLoaded", function () {
 var result =  window.location.search.match(new RegExp("(\\?|&)" + param + "(\\[\\])?=([^&]*)")); return result ? result[3] : false;
     }
              
-                    var videoContainer = "https://ml-pull-hwc.myco.io/MixTV/hls/index.m3u8";
+                    var manifestUri = "https://ml-pull-hwc.myco.io/MixTV/hls/index.m3u8";
 
 
-                    if (!video || !videoContainer) {
-                        console.error('Video element or container not found');
-                        return;
-                    }
+                
 
                     // Initialize Shaka Player UI if not already initialized
                     if (!video['ui']) {
