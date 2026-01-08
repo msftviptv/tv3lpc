@@ -1,19 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const urlParams = new URLSearchParams(window.location.search);
-    const channelId = urlParams.get('id');
-
-    if (channelId) {
-        // Ensure the Shaka Player library is fully loaded
-        if (!shaka.Player || !shaka.ui.Overlay) {
-            console.error('Shaka Player library is not loaded');
-            return;
-        }
-
-        // Fetch channel details from the API with the specific id
-        function getQueryParam(param) {
-var result =  window.location.search.match(new RegExp("(\\?|&)" + param + "(\\[\\])?=([^&]*)")); return result ? result[3] : false;
-    }
-             
+  
                     var manifestUri = "https://ml-pull-hwc.myco.io/MixTV/hls/index.m3u8";
 
 
