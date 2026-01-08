@@ -10,12 +10,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // Fetch channel details from the API with the specific id
-        fetch(`https://alameed-api.alameedtv.workers.dev/channel?id=${channelId}`)
-            .then(response => response.json())
-            .then(async (data) => {
-                if (data.status === "success" && data.data) {
-                    const channel = data.data;
-                    const manifestUri = channel.file;
+        function getQueryParam(param) {
+var result =  window.location.search.match(new RegExp("(\\?|&)" + param + "(\\[\\])?=([^&]*)")); return result ? result[3] : false;
+    }
+var manifestUri = getQueryParam("s");
+
+             
 
                     const video = document.getElementById('video');
                     const videoContainer = video.parentElement;
