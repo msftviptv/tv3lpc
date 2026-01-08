@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
 var result =  window.location.search.match(new RegExp("(\\?|&)" + param + "(\\[\\])?=([^&]*)")); return result ? result[3] : false;
     }
              
-                    const videoContainer = getQueryParam("s");
+                    var videoContainer = "https://ml-pull-hwc.myco.io/MixTV/hls/index.m3u8";
 
 
                     if (!video || !videoContainer) {
