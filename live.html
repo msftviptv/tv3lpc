@@ -1,51 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ALAMEED PLAYER</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.15.3/shaka-player.compiled.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.15.3/shaka-player.ui.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script defer src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.15.3/controls.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link href="https://fonts.googleapis.com/css?family=Material+Icons+Sharp" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shaka Player - Dynamic Link</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/controls.css">
+    
     <style>
-        html, body {
-            padding: 0;
+        body {
             margin: 0;
-            background: black;
-        }
-        .player-container {
-            width: 100vw;
-            height: 100vh;
+            padding: 0;
+            background-color: #000;
             display: flex;
             justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
-        #video {
+        /* جعل المشغل يأخذ مساحة الشاشة بالكامل */
+        .video-container {
             width: 100%;
             height: 100%;
-            font-size: 100px;
         }
-
-        .shaka-fullscreen-button {
-            height: 75px !important;
-            width: 75px !important;
+        video {
+            width: 100%;
+            height: 100%;
         }
     </style>
 </head>
 <body>
-    <!-- <div data-shaka-player-container style="max-width:40em" -->
-    <div data-shaka-player-container class="player-container"
-         data-shaka-player-cast-receiver-id="07AEE832">
-        <video 
-            id="video" 
-            style="width:100%;height:100%"
-            poster="favicon.ico"
-            data-shaka-player
-            autoplay>
-            Your browser does not support the video player.
-        </video>
+
+    <div data-shaka-player-container class="video-container">
+        <video data-shaka-player id="video" autoplay></video>
     </div>
-    <script src="player/shakasettings2.js"></script>
+
+    <script>
+        async function initPlayer() {
+            // 1. تعريف العناصر
+            const video = document.getElementById('video');
+            const ui = video['ui'];
+            const controls = ui.getControls();
+            const player = controls.getPlayer();
+
+            // 2. الحصول على الرابط من المتغير s في الـ URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const streamUrl = urlParams.get('s'); 
+
+            // 3. التحقق والتشغيل
+            if (streamUrl) {
+                try {
+                    // فك تشفير الرابط في حال كان يحتوي على رموز خاصة
+                    const cleanUrl = decodeURIComponent(streamUrl);
+                    
+                    // إعدادات اختيارية لتحسين التشغيل
+                    player.configure({
+                        streaming: {
+                            bufferingGoal: 30,
+                            rebufferingGoal: 15
+                        }
+                    });
+
+                    await player.load(cleanUrl);
+                    console.log('تم تحميل القناة بنجاح:', cleanUrl);
+                } catch (error) {
+                    console.error('خطأ في تحميل الفيديو:', error);
+                    alert('عذراً، تعذر تشغيل هذا الرابط. تأكد من صحته أو من إعدادات CORS.');
+                }
+            } else {
+                console.warn('لم يتم العثور على رابط! يرجى إضافة ?s= متبوعاً برابط الفيديو.');
+            }
+        }
+
+        // انتظر حتى يتم تحميل واجهة Shaka بالكامل
+        document.addEventListener('shaka-ui-loaded', initPlayer);
+        
+        // التعامل مع أخطاء التحميل العامة
+        document.addEventListener('shaka-player-error', (event) => {
+            console.error('Shaka Player Error:', event.detail);
+        });
+    </script>
 </body>
 </html>
