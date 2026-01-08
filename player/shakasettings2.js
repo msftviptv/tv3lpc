@@ -13,12 +13,9 @@ document.addEventListener("DOMContentLoaded", function () {
         function getQueryParam(param) {
 var result =  window.location.search.match(new RegExp("(\\?|&)" + param + "(\\[\\])?=([^&]*)")); return result ? result[3] : false;
     }
-var manifestUri = getQueryParam("s");
-
              
+                    const videoContainer = getQueryParam("s");
 
-                    const video = document.getElementById('video');
-                    const videoContainer = video.parentElement;
 
                     if (!video || !videoContainer) {
                         console.error('Video element or container not found');
