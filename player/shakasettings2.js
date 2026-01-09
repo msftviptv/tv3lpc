@@ -44,7 +44,7 @@ async function initPlayer() {
         else if (channelId) {
             // ب - لو بعت ID: روح اسأل السيرفر زي زمان
             console.log("جاري جلب بيانات القناة بالـ ID...");
-            const response = await fetch(`https://your-api-server.com/api?id=${channelId}`);
+            const response = await fetch(`https://alameed-api.alameedtv.workers.dev/channel?id=${channelId}`);
             const data = await response.json();
             
             // لو القناة فيها تشفير (Keys)
