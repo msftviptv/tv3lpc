@@ -27,7 +27,7 @@ async function initPlayer() {
 
     // إضافة فلتر الـ User-Agent اللي اتفقنا عليه
     player.getNetworkingEngine().registerRequestFilter(function(type, request) {
-        request.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36';
+        request.headers['User-Agent'] = 'VAVOO2/6';
     });
 
     // 4. الذكاء الجديد: نختار هنشغل إيه؟
