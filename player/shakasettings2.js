@@ -19,6 +19,7 @@ async function initPlayer() {
     // 3. إعدادات البث (عشان الـ User-Agent والـ CORS)
     player.configure({
         streaming: {
+            initialLiveManifestLookahead: 30,
             jumpLargeGaps: true,
             lowLatencyMode: true,
             rebufferingGoal: 10
