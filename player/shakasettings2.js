@@ -1,9 +1,11 @@
 async function initPlayer() {
+    // 1. تعريف العناصر الأساسية
     const video = document.getElementById('video');
     const ui = video['ui'];
     const controls = ui.getControls();
     const player = controls.getPlayer();
 
+    // 2. إعدادات الشكل والزراير (نفس اللي كانت في ملفك)
     const uiConfig = {
         'controlPanelElements': [
             'play_pause', 'time_and_duration', 'spacer', 
@@ -14,6 +16,7 @@ async function initPlayer() {
     };
     ui.configure(uiConfig);
 
+    // 3. إعدادات البث (عشان الـ User-Agent والـ CORS)
     player.configure({
         streaming: {
             jumpLargeGaps: true,
@@ -22,39 +25,42 @@ async function initPlayer() {
         }
     });
 
-    // 1. رابط البروكسي الخاص بك في Cloudflare
-    // استبدل الرابط ده بالرابط اللي طلعلك من Cloudflare
-    const myProxy = "https://blue-paper-3226.03ab59a70f.workers.dev/?url=";
+    // إضافة فلتر الـ User-Agent اللي اتفقنا عليه
+    player.getNetworkingEngine().registerRequestFilter(function(type, request) {
+        request.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36';
+    });
 
+    // 4. الذكاء الجديد: نختار هنشغل إيه؟
     const urlParams = new URLSearchParams(window.location.search);
-    const directUrl = urlParams.get('s');  
-    const channelId = urlParams.get('id'); 
+    const directUrl = urlParams.get('s');  // لو فيه رابط مباشر
+    const channelId = urlParams.get('id'); // لو فيه ID
 
     try {
         if (directUrl) {
-            console.log("تشغيل عبر البروكسي...");
-            
-            // تنظيف الرابط من أي بارامترات زائدة تبدأ بـ &h_
-            const cleanUrl = decodeURIComponent(directUrl).split('&h_')[0];
-            
-            // 2. التحميل من خلال البروكسي لتخطي الـ CORS والـ User-Agent
-            await player.load(myProxy + encodeURIComponent(cleanUrl));
-            
-        } else if (channelId) {
-            // الطريقة القديمة بالـ ID
+            // أ - لو بعت رابط مباشر: شغله علطول
+            console.log("تشغيل رابط مباشر...");
+            await player.load(decodeURIComponent(directUrl));
+        } 
+        else if (channelId) {
+            // ب - لو بعت ID: روح اسأل السيرفر زي زمان
+            console.log("جاري جلب بيانات القناة بالـ ID...");
             const response = await fetch(`https://your-api-server.com/api?id=${channelId}`);
             const data = await response.json();
             
+            // لو القناة فيها تشفير (Keys)
             if (data.keyId && data.key) {
                 player.configure({
                     drm: { clearKeys: { [data.keyId]: data.key } }
                 });
             }
             await player.load(data.url);
+        } else {
+            console.error("لا يوجد رابط (s) ولا يوجد معرف (id)!");
         }
     } catch (e) {
         console.error("خطأ في التحميل:", e);
     }
 }
 
+// تشغيل عند جاهزية المكتبة
 document.addEventListener('shaka-ui-loaded', initPlayer);
