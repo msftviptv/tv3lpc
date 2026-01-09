@@ -27,7 +27,12 @@ async function initPlayer() {
 
     // إضافة فلتر الـ User-Agent اللي اتفقنا عليه
     player.getNetworkingEngine().registerRequestFilter(function(type, request) {
+       // تعيين الـ User-Agent الخاص بـ Vavoo
         request.headers['User-Agent'] = 'VAVOO2/6';
+
+        // إضافة الـ Referer والـ Origin لأن السيرفر يتحقق منهما
+        request.headers['Referer'] = 'https://vavoo.to/';
+        request.headers['Origin'] = 'https://vavoo.to';
     });
 
     // 4. الذكاء الجديد: نختار هنشغل إيه؟
